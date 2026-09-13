@@ -310,3 +310,97 @@ footer {
     }
 
 }
+/* =================================
+   CENTRAGE DU CONTENU
+================================= */
+
+.contenu-section {
+    max-width: 1000px;
+    margin: 70px auto;
+    padding: 35px 45px;
+
+    background-color: white;
+
+    border-radius: 18px;
+
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+
+    text-align: center;
+}
+
+
+/* Les paragraphes */
+
+.contenu-section p {
+    max-width: 850px;
+    margin: 0 auto 18px;
+}
+
+
+/* =================================
+   EFFET AU SURVOL DES CARTES
+================================= */
+
+.carte {
+    transition:
+        transform 0.3s ease,
+        box-shadow 0.3s ease;
+
+    cursor: pointer;
+}
+
+.carte:hover {
+    transform: translateY(-10px) scale(1.02);
+
+    box-shadow:
+        0 15px 30px rgba(0, 80, 120, 0.18);
+}
+
+
+/* =================================
+   EFFET SUR LES ÉTAPES
+================================= */
+
+.etape {
+    transition:
+        transform 0.3s ease,
+        box-shadow 0.3s ease;
+}
+
+.etape:hover {
+    transform: translateX(8px);
+
+    box-shadow:
+        0 10px 25px rgba(0, 80, 120, 0.15);
+}
+
+
+/* =================================
+   TITRES
+================================= */
+
+.contenu-section h2 {
+    position: relative;
+
+    display: inline-block;
+
+    margin-bottom: 35px;
+}
+
+
+/* Petite ligne sous les titres */
+
+.contenu-section h2::after {
+    content: "";
+
+    display: block;
+
+    width: 60px;
+    height: 4px;
+
+    background-color: #00a6c7;
+
+    margin: 10px auto 0;
+
+    border-radius: 5px;
+}
