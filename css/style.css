@@ -34,13 +34,13 @@ header {
 .logo-titre {
     display: flex;
     align-items: center;
-    padding: 15px 5%;
-    gap: 15px;
+    padding: 30px 10%;
+    gap: 30px;
 }
 
 .logo-titre img {
-    width: 70px;
-    height: 70px;
+    width: 100px;
+    height: 100px;
     object-fit: contain;
 }
 
