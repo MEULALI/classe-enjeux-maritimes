@@ -1,1 +1,726 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full bg-slate-900 text-slate-100">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Classe à Enjeux Maritimes - Façade Méditerranéenne de la Tunisie</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
 
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Google Fonts (Inter) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            ocean: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
+              800: '#075985',
+              900: '#0c4a6e',
+              950: '#082f49',
+            },
+            sand: {
+              300: '#fde68a',
+              400: '#fcd34d',
+              500: '#f59e0b',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Styling personnalisé pour la carte et les interactions */
+    .coastline-highlight {
+      stroke-dasharray: 8 4;
+      animation: dash 30s linear infinite;
+    }
+    @keyframes dash {
+      to { stroke-dashoffset: -1000; }
+    }
+
+    .hotspot {
+      cursor: pointer;
+      transition: transform 0.25s ease, fill 0.25s ease, stroke 0.25s ease;
+    }
+    .hotspot:hover {
+      transform: scale(1.35);
+    }
+
+    .pulse-ring {
+      animation: pulse 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.8; transform: scale(1); }
+      50% { opacity: 0.2; transform: scale(1.8); }
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #0284c7;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #0ea5e9;
+    }
+  </style>
+</head>
+<body class="h-full flex flex-col font-sans overflow-x-hidden select-none">
+
+  <!-- En-tête / Header Maritime -->
+  <header class="bg-slate-950/90 border-b border-cyan-500/20 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-3 sm:px-6 lg:px-8 flex flex-wrap items-center justify-between gap-4">
+      
+      <div class="flex items-center space-x-3">
+        <div class="p-2.5 bg-gradient-to-br from-cyan-500 to-blue-700 rounded-xl shadow-lg shadow-cyan-500/20 text-white">
+          <i data-lucide="anchor" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <span class="text-xs font-semibold uppercase tracking-wider text-cyan-400">Projet Pédagogique</span>
+          <h1 class="text-lg sm:text-xl font-bold bg-gradient-to-r from-white via-cyan-100 to-cyan-400 bg-clip-text text-transparent">
+            Classe à Enjeux Maritimes — Tunisie
+          </h1>
+        </div>
+      </div>
+
+      <!-- Filtres Thématiques -->
+      <div class="flex items-center space-x-2 bg-slate-900/90 p-1.5 rounded-xl border border-slate-800 overflow-x-auto max-w-full">
+        <button onclick="setFilter('all')" id="btn-all" class="filter-btn active px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center space-x-1.5 bg-cyan-600 text-white shadow">
+          <i data-lucide="globe" class="w-3.5 h-3.5"></i>
+          <span>Tous les enjeux</span>
+        </button>
+        <button onclick="setFilter('bio')" id="btn-bio" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center space-x-1.5 text-slate-300 hover:text-white hover:bg-slate-800">
+          <i data-lucide="fish" class="w-3.5 h-3.5 text-emerald-400"></i>
+          <span>Biodiversité & AMP</span>
+        </button>
+        <button onclick="setFilter('eco')" id="btn-eco" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center space-x-1.5 text-slate-300 hover:text-white hover:bg-slate-800">
+          <i data-lucide="ship" class="w-3.5 h-3.5 text-cyan-400"></i>
+          <span>Économie Bleue & Ports</span>
+        </button>
+        <button onclick="setFilter('geo')" id="btn-geo" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center space-x-1.5 text-slate-300 hover:text-white hover:bg-slate-800">
+          <i data-lucide="waves" class="w-3.5 h-3.5 text-amber-400"></i>
+          <span>Golfes & Littoral</span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Contenu Principal -->
+  <main class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 p-4 sm:p-6 max-w-7xl mx-auto w-full">
+    
+    <!-- CARTE INTERACTIVE (SVG) - Colonne Gauche/Centre -->
+    <section class="lg:col-span-7 bg-slate-950/50 rounded-2xl border border-slate-800 p-4 sm:p-6 flex flex-col justify-between relative shadow-2xl backdrop-blur">
+      
+      <!-- Barre d'outils Carte -->
+      <div class="flex items-center justify-between mb-4 z-10">
+        <div>
+          <h2 class="text-base font-semibold text-slate-200 flex items-center gap-2">
+            <i data-lucide="map-pin" class="w-4 h-4 text-cyan-400"></i>
+            Littoral Méditerranéen (1300 km de côtes)
+          </h2>
+          <p class="text-xs text-slate-400">Cliquez sur les points pour explorer les enjeux maritimes</p>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="resetView()" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs flex items-center gap-1 transition">
+            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Réinitialiser
+          </button>
+        </div>
+      </div>
+
+      <!-- Conteneur Carte SVG -->
+      <div class="relative w-full h-[450px] sm:h-[550px] flex items-center justify-center bg-gradient-to-b from-slate-900/80 to-ocean-950/40 rounded-xl overflow-hidden border border-slate-800/80">
+        
+        <!-- Rose des vents decorative -->
+        <div class="absolute top-4 right-4 pointer-events-none opacity-30 text-cyan-400 flex flex-col items-center">
+          <i data-lucide="compass" class="w-12 h-12"></i>
+          <span class="text-[10px] font-bold tracking-widest mt-1">NORD</span>
+        </div>
+
+        <!-- Légende flottante -->
+        <div class="absolute bottom-4 left-4 bg-slate-900/90 backdrop-blur border border-slate-800 p-3 rounded-xl text-xs space-y-2 z-10 max-w-[200px]">
+          <span class="font-semibold text-slate-300 block border-b border-slate-800 pb-1">Légende</span>
+          <div class="flex items-center space-x-2">
+            <span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span>
+            <span class="text-slate-400 text-[11px]">Biodiversité & AMP</span>
+          </div>
+          <div class="flex items-center space-x-2">
+            <span class="w-3 h-3 rounded-full bg-cyan-500 inline-block"></span>
+            <span class="text-slate-400 text-[11px]">Ports & Économie</span>
+          </div>
+          <div class="flex items-center space-x-2">
+            <span class="w-3 h-3 rounded-full bg-amber-500 inline-block"></span>
+            <span class="text-slate-400 text-[11px]">Golfes & Zones côtières</span>
+          </div>
+          <div class="flex items-center space-x-2 pt-1">
+            <span class="w-6 h-0.5 border-b border-dashed border-cyan-400 inline-block"></span>
+            <span class="text-slate-400 text-[11px]">Façade Maritime</span>
+          </div>
+        </div>
+
+        <!-- SVG CARTE DE LA TUNISIE -->
+        <svg id="tunisia-svg" viewBox="0 0 500 750" class="w-full h-full max-h-full drop-shadow-[0_10px_25px_rgba(14,165,233,0.15)]">
+          <defs>
+            <!-- Dégradé Terres -->
+            <linearGradient id="landGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#1e293b" />
+              <stop offset="100%" stop-color="#0f172a" />
+            </linearGradient>
+
+            <!-- Dégradé Mer Méditerranée -->
+            <linearGradient id="seaGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#075985" stop-opacity="0.2"/>
+              <stop offset="100%" stop-color="#0c4a6e" stop-opacity="0.05"/>
+            </linearGradient>
+
+            <!-- Effet brillant sur les hubs -->
+            <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur stdDeviation="3" result="blur" />
+              <feComposite in="SourceGraphic" in2="blur" operator="over" />
+            </filter>
+          </defs>
+
+          <!-- Zone de mer environnante -->
+          <rect width="100%" height="100%" fill="url(#seaGrad)" />
+          
+          <!-- Inscription Méditerranée -->
+          <text x="320" y="100" fill="#0ea5e9" opacity="0.25" font-size="14" font-weight="700" letter-spacing="4" transform="rotate(35, 320, 100)">
+            MER MÉDITERRANÉE
+          </text>
+          <text x="360" y="420" fill="#0ea5e9" opacity="0.2" font-size="12" font-weight="600" letter-spacing="3">
+            BASSIN ORIENTAL
+          </text>
+
+          <!-- TRACÉ SIMPLIFIÉ DE LA TUNISIE -->
+          <g id="tunisia-map">
+            <!-- Contour du Pays -->
+            <path d="M 120,60 
+                     Q 160,50 200,45 
+                     T 250,55 
+                     Q 280,65 310,90 
+                     Q 320,110 300,135
+                     Q 280,150 295,185
+                     Q 310,210 325,240
+                     Q 340,265 330,300
+                     Q 315,320 330,350
+                     Q 350,380 370,410
+                     Q 380,440 375,480
+                     Q 370,510 395,540
+                     Q 400,560 370,580
+                     Q 340,590 310,585
+                     Q 280,575 250,560
+                     L 210,590 L 170,620 L 140,570 L 120,500 L 110,430 L 100,360 L 90,280 L 100,200 L 110,120 Z" 
+                  fill="url(#landGrad)" 
+                  stroke="#334155" 
+                  stroke-width="2" 
+                  class="transition-colors duration-300 hover:stroke-slate-500"/>
+
+            <!-- Ligne de côte méditerranéenne mise en évidence -->
+            <path d="M 120,60 
+                     Q 160,50 200,45 
+                     T 250,55 
+                     Q 280,65 310,90 
+                     Q 320,110 300,135
+                     Q 280,150 295,185
+                     Q 310,210 325,240
+                     Q 340,265 330,300
+                     Q 315,320 330,350
+                     Q 350,380 370,410
+                     Q 380,440 375,480
+                     Q 370,510 395,540
+                     Q 400,560 370,580" 
+                  fill="none" 
+                  stroke="#38bdf8" 
+                  stroke-width="3.5" 
+                  stroke-linecap="round"
+                  class="coastline-highlight" filter="url(#glow)"/>
+
+            <!-- Île de Djerba -->
+            <path d="M 370,560 Q 395,555 405,570 T 385,590 T 365,575 Z" 
+                  fill="#1e293b" 
+                  stroke="#38bdf8" 
+                  stroke-width="2"/>
+
+            <!-- Îles Kerkennah -->
+            <path d="M 360,420 Q 375,415 385,425 T 375,435 Z" 
+                  fill="#1e293b" 
+                  stroke="#38bdf8" 
+                  stroke-width="1.5"/>
+            <path d="M 345,430 Q 355,428 360,435 T 350,442 Z" 
+                  fill="#1e293b" 
+                  stroke="#38bdf8" 
+                  stroke-width="1.5"/>
+
+            <!-- Île de Galite -->
+            <circle cx="170" cy="25" r="5" fill="#1e293b" stroke="#10b981" stroke-width="1.5"/>
+
+            <!-- Repères des Golfes (Annotations) -->
+            <text x="230" y="85" fill="#f59e0b" font-size="10" font-weight="600" opacity="0.8">Golfe de Tunis</text>
+            <text x="330" y="270" fill="#f59e0b" font-size="10" font-weight="600" opacity="0.8">Golfe de Hammamet</text>
+            <text x="340" y="490" fill="#f59e0b" font-size="10" font-weight="600" opacity="0.8">Golfe de Gabès</text>
+          </g>
+
+          <!-- POINTS D'INTÉRÊT (HOTSPOTS INTERACTIFS) -->
+          <g id="hotspots">
+
+            <!-- 1. Tabarka / La Galite (AMP & Biodiversité) -->
+            <g class="hotspot hotspot-item cat-bio" data-id="tabarka" onclick="selectSpot('tabarka')">
+              <circle cx="160" cy="52" r="12" fill="#10b981" opacity="0.2" class="pulse-ring"/>
+              <circle cx="160" cy="52" r="6" fill="#10b981" stroke="#ffffff" stroke-width="1.5" filter="url(#glow)"/>
+              <text x="105" y="48" fill="#e2e8f0" font-size="10" font-weight="600">Tabarka / Galite</text>
+            </g>
+
+            <!-- 2. Bizerte (Port & Lac / Économie) -->
+            <g class="hotspot hotspot-item cat-eco" data-id="bizerte" onclick="selectSpot('bizerte')">
+              <circle cx="230" cy="50" r="12" fill="#0ea5e9" opacity="0.2" class="pulse-ring"/>
+              <circle cx="230" cy="50" r="6" fill="#0ea5e9" stroke="#ffffff" stroke-width="1.5" filter="url(#glow)"/>
+              <text x="240" y="45" fill="#e2e8f0" font-size="10" font-weight="600">Bizerte</text>
+            </g>
+
+            <!-- 3. Golfe de Tunis & Goulette (Hub Maritime) -->
+            <g class="hotspot hotspot-item cat-eco" data-id="tunis" onclick="selectSpot('tunis')">
+              <circle cx="270" cy="85" r="14" fill="#0ea5e9" opacity="0.2" class="pulse-ring"/>
+              <circle cx="270" cy="85" r="7" fill="#0ea5e9" stroke="#ffffff" stroke-width="2" filter="url(#glow)"/>
+              <text x="282" y="90" fill="#ffffff" font-size="11" font-weight="700">Grand Tunis / La Goulette</text>
+            </g>
+
+            <!-- 4. Cap Bon / Zembra (AMP & Migration) -->
+            <g class="hotspot hotspot-item cat-bio" data-id="zembra" onclick="selectSpot('zembra')">
+              <circle cx="305" cy="75" r="10" fill="#10b981" opacity="0.2" class="pulse-ring"/>
+              <circle cx="305" cy="75" r="5.5" fill="#10b981" stroke="#ffffff" stroke-width="1.5"/>
+              <text x="315" y="70" fill="#e2e8f0" font-size="9" font-weight="600">Archipel de Zembra</text>
+            </g>
+
+            <!-- 5. Golfe de Hammamet & Sousse (Tourisme & Littoral) -->
+            <g class="hotspot hotspot-item cat-geo" data-id="sousse" onclick="selectSpot('sousse')">
+              <circle cx="305" cy="220" r="12" fill="#f59e0b" opacity="0.2" class="pulse-ring"/>
+              <circle cx="305" cy="220" r="6" fill="#f59e0b" stroke="#ffffff" stroke-width="1.5"/>
+              <text x="318" y="225" fill="#e2e8f0" font-size="10" font-weight="600">Sousse / Monastir</text>
+            </g>
+
+            <!-- 6. Archipel de Kerkennah & Sfax (Pêche & Herbiers) -->
+            <g class="hotspot hotspot-item cat-bio" data-id="kerkennah" onclick="selectSpot('kerkennah')">
+              <circle cx="345" cy="385" r="13" fill="#10b981" opacity="0.2" class="pulse-ring"/>
+              <circle cx="345" cy="385" r="6.5" fill="#10b981" stroke="#ffffff" stroke-width="1.5"/>
+              <text x="260" y="380" fill="#e2e8f0" font-size="10" font-weight="600">Sfax & Kerkennah</text>
+            </g>
+
+            <!-- 7. Golfe de Gabès (Marées & Écosystème fragile) -->
+            <g class="hotspot hotspot-item cat-geo" data-id="gabes" onclick="selectSpot('gabes')">
+              <circle cx="330" cy="480" r="12" fill="#f59e0b" opacity="0.2" class="pulse-ring"/>
+              <circle cx="330" cy="480" r="6" fill="#f59e0b" stroke="#ffffff" stroke-width="1.5"/>
+              <text x="280" y="485" fill="#e2e8f0" font-size="10" font-weight="600">Golfe de Gabès</text>
+            </g>
+
+            <!-- 8. Djerba & Zarzis (Économie & Patrimoine Lagunaire) -->
+            <g class="hotspot hotspot-item cat-eco" data-id="zarzis" onclick="selectSpot('zarzis')">
+              <circle cx="380" cy="570" r="12" fill="#0ea5e9" opacity="0.2" class="pulse-ring"/>
+              <circle cx="380" cy="570" r="6" fill="#0ea5e9" stroke="#ffffff" stroke-width="1.5"/>
+              <text x="290" y="575" fill="#e2e8f0" font-size="10" font-weight="600">Djerba / Zarzis</text>
+            </g>
+
+          </g>
+        </svg>
+
+      </div>
+
+      <!-- Instruction d'aide -->
+      <div class="mt-3 text-center text-xs text-slate-400">
+        💡 <span class="text-cyan-400 font-medium">Conseil pédagogique :</span> Survoler ou cliquer sur une zone géographique pour charger le volet éducatif.
+      </div>
+    </section>
+
+    <!-- FICHE PÉDAGOGIQUE DÉTAILLÉE - Colonne Droite -->
+    <section class="lg:col-span-5 flex flex-col h-full">
+      <div id="info-panel" class="bg-slate-950/70 border border-slate-800 rounded-2xl p-5 sm:p-6 flex-1 flex flex-col justify-between backdrop-blur shadow-2xl relative overflow-hidden transition-all duration-300">
+        
+        <!-- Le contenu dynamique sera injecté ici par JS -->
+        <div id="panel-content" class="space-y-4">
+          <!-- Chargement par défaut au lancement -->
+        </div>
+
+        <!-- Footer fixe de la fiche -->
+        <div class="pt-4 mt-6 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
+          <span class="flex items-center gap-1.5">
+            <i data-lucide="book-open" class="w-4 h-4 text-cyan-400"></i>
+            Module 'Classe à Enjeux Maritimes'
+          </span>
+          <span class="text-slate-400">Tunisie — Méditerranée</span>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Section interactive du Bas : Synthèse des Enjeux Côtiers -->
+  <footer class="bg-slate-950 border-t border-slate-800/80 mt-auto py-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <h3 class="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-4 flex items-center gap-2">
+        <i data-lucide="shield-check" class="w-4 h-4 text-cyan-400"></i>
+        Les 4 Piliers Maritimes Nationaux (Tunisie)
+      </h3>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        <!-- Carte 1 -->
+        <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl hover:border-emerald-500/40 transition">
+          <div class="flex items-center gap-3 mb-2">
+            <div class="p-2 bg-emerald-500/10 text-emerald-400 rounded-lg">
+              <i data-lucide="sprout" class="w-5 h-5"></i>
+            </div>
+            <h4 class="text-sm font-bold text-slate-200">Aires Marines Protégées</h4>
+          </div>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Protection des herbiers de Posidonie (véritables poumons de la Méditerranée) et des réserves comme Zembra et La Galite.
+          </p>
+        </div>
+
+        <!-- Carte 2 -->
+        <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl hover:border-cyan-500/40 transition">
+          <div class="flex items-center gap-3 mb-2">
+            <div class="p-2 bg-cyan-500/10 text-cyan-400 rounded-lg">
+              <i data-lucide="anchor" class="w-5 h-5"></i>
+            </div>
+            <h4 class="text-sm font-bold text-slate-200">Économie & Logistique</h4>
+          </div>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Hubs portuaires majeurs (Rades, Bizerte, Sfax) gérant 95% du commerce extérieur tunisien avec le bassin méditerranéen.
+          </p>
+        </div>
+
+        <!-- Carte 3 -->
+        <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl hover:border-amber-500/40 transition">
+          <div class="flex items-center gap-3 mb-2">
+            <div class="p-2 bg-amber-500/10 text-amber-400 rounded-lg">
+              <i data-lucide="sun" class="w-5 h-5"></i>
+            </div>
+            <h4 class="text-sm font-bold text-slate-200">Pression Littorale</h4>
+          </div>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Gestion de la montée des eaux, l'érosion des côtes sableuses (ex: Hammamet, Djerba) et la régulation du tourisme marin.
+          </p>
+        </div>
+
+        <!-- Carte 4 -->
+        <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl hover:border-purple-500/40 transition">
+          <div class="flex items-center gap-3 mb-2">
+            <div class="p-2 bg-purple-500/10 text-purple-400 rounded-lg">
+              <i data-lucide="fish-off" class="w-5 h-5"></i>
+            </div>
+            <h4 class="text-sm font-bold text-slate-200">Pêche Durable</h4>
+          </div>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Tradition millénaire (Charfia à Kerkennah) alliée à la lutte contre le chalutage illégal dans le Golfe de Gabès.
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </footer>
+
+  <!-- JAVASCRIPT & DONNÉES PÉDAGOGIQUES -->
+  <script>
+    // Base de données pédagogiques des hotspots
+    const dataSpots = {
+      default: {
+        title: "Présentation Générale du Littoral Tunisien",
+        subtitle: "1 300 km de façades maritimes stratégiques",
+        category: "Synthèse Méditerranéenne",
+        badgeColor: "bg-cyan-500/10 text-cyan-400 border-cyan-500/30",
+        icon: "globe",
+        image: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=600&q=80",
+        description: "La Tunisie occupe une position géostratégique unique au centre du bassin méditerranéen, séparant le bassin occidental du bassin oriental (Canal de Sicile). Sa côte abrite plus de 65% de la population et concentre l'essentiel des activités économiques.",
+        points: [
+          "<b>Façade maritime :</b> De Tabarka au Nord-Ouest jusqu'à Zarzis/Ben Guerdane au Sud.",
+          "<b>Golfes principaux :</b> Golfe de Tunis, Golfe de Hammamet, et le Golfe de Gabès.",
+          "<b>Enjeu clé :</b> Concilier préservation du milieu marin et développement économique (ports, pêche, tourisme)."
+        ],
+        quiz: "Combien de kilomètres de côtes compte la Tunisie ?",
+        quizAnswer: "La Tunisie compte environ 1 300 km de côtes (hors îles) et plus de 1 450 km en incluant les espaces insulaires."
+      },
+      tabarka: {
+        title: "Tabarka & Archipel de la Galite",
+        subtitle: "Sanctuaire de Biodiversité & Récifs Coralliens",
+        category: "Biodiversité & AMP",
+        badgeColor: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
+        icon: "fish",
+        image: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=600&q=80",
+        description: "Située sur la côte nord-ouest (Côte de Corail), cette zone est réputée pour ses fonds marins coralliens exceptionnels et son archipel hauturier protégé (La Galite), abri historique du phoque moine de Méditerranée.",
+        points: [
+          "<b>Aires Marines Protégées (AMP) :</b> L'archipel de la Galite est une réserve naturelle strictement réglementée.",
+          "<b>Ressources d'exception :</b> Corail rouge (Corallium rubrum) et mérou brun.",
+          "<b>Activités :</b> Plongée sous-marine éco-responsable et étude de la faune pélagique."
+        ],
+        quiz: "Quelle est la particularité de l'Archipel de La Galite ?",
+        quizAnswer: "C'est l'un des points les plus septentrionaux de l'Afrique et une aire marine protégée de référence."
+      },
+      bizerte: {
+        title: "Bizerte & son Lac Lagunaire",
+        subtitle: "Hub Portuaire du Nord & Aquaculture",
+        category: "Économie Bleue & Ports",
+        badgeColor: "bg-cyan-500/10 text-cyan-400 border-cyan-500/30",
+        icon: "ship",
+        image: "https://images.unsplash.com/photo-1559136555-9303baea8ebd?auto=format&fit=crop&w=600&q=80",
+        description: "Ville la plus septentrionale d'Afrique, Bizerte possède un canal reliant la Méditerranée à son grand lac. C'est un centre industriel, conchylicole (moules et huîtres) et de réparation navale majeur.",
+        points: [
+          "<b>Écosystème Lagunaire :</b> Le lac de Bizerte s'étend sur 150 km² et communique avec la mer.",
+          "<b>Économie commerciale :</b> Port de commerce, chantiers navals et pôle de recherche en sciences de la mer.",
+          "<b>Défi environnemental :</b> Programme de dépollution et restauration écologique de la lagune."
+        ],
+        quiz: "Quelle activité aquacole est célèbre dans la lagune de Bizerte ?",
+        quizAnswer: "La Mytiliculture (culture des moules) et l'Ostréiculture (culture des huîtres)."
+      },
+      tunis: {
+        title: "Grand Tunis & Port de La Goulette",
+        subtitle: "Cœur Économique et Logistique Tunisien",
+        category: "Économie Bleue & Ports",
+        badgeColor: "bg-cyan-500/10 text-cyan-400 border-cyan-500/30",
+        icon: "anchor",
+        image: "https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=600&q=80",
+        description: "Le Golfe de Tunis abrite la capitale et les installations portuaires majeures de Radès et La Goulette, véritables poumons des échanges internationaux de marchandise et de croisières.",
+        points: [
+          "<b>Port de Radès :</b> Traite la majorité du trafic de conteneurs et de rouliers (Ro-Ro) de Tunisie.",
+          "<b>Histoire & Patrimoine :</b> Vestiges navals carthaginois (les célèbres ports puniques de Carthage).",
+          "<b>Pression côtière :</b> Aménagement du littoral urbain et gestion du trafic maritime dense dans le Golfe."
+        ],
+        quiz: "Quel port du Golfe de Tunis gère le plus grand volume de conteneurs ?",
+        quizAnswer: "Le port de Radès."
+      },
+      zembra: {
+        title: "Archipel de Zembra et Zembretta",
+        subtitle: "Parc National et Réserve de Biosphère UNESCO",
+        category: "Biodiversité & AMP",
+        badgeColor: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
+        icon: "tree-pine",
+        image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80",
+        description: "Situé à la pointe du Cap Bon, cet archipel montagneux spectaculaire est un sanctuaire biologique pour les oiseaux marins migrateurs et la faune sous-marine.",
+        points: [
+          "<b>Reconnaissance internationale :</b> Réserve de biosphère reconnue par l'UNESCO.",
+          "<b>Avifaune :</b> Plus grande colonie de Puffins cendrés de toute la Méditerranée.",
+          "<b>Biodiversité marine :</b> Eaux cristallines préservées de toute pollution industrielle."
+        ],
+        quiz: "Quel oiseau marin niche en masse sur l'île de Zembra ?",
+        quizAnswer: "Le Puffin cendré."
+      },
+      sousse: {
+        title: "Sousse, Monastir et le Golfe de Hammamet",
+        subtitle: "Tourisme Littoral & Pression Écologique",
+        category: "Golfes & Littoral",
+        badgeColor: "bg-amber-500/10 text-amber-400 border-amber-500/30",
+        icon: "sun",
+        image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80",
+        description: "Le Sahel tunisien se caractérise par de vastes plages de sable fin. C'est l'un des premiers pôles touristiques du pays, nécessitant une surveillance accrue de l'érosion côtière.",
+        points: [
+          "<b>Infrastructures :</b> Marina de Port El Kantaoui, ports de pêche artisanale à Monastir.",
+          "<b>Érosion du littoral :</b> Recul des plages sous l'effet des tempêtes et du réchauffement climatiques.",
+          "<b>Protection :</b> Installation de brise-lames et réapprovisionnement en sable."
+        ],
+        quiz: "Quel est l'un des plus anciens ports de plaisance de la région ?",
+        quizAnswer: "Port El Kantaoui à Sousse."
+      },
+      kerkennah: {
+        title: "Archipel de Kerkennah & Région de Sfax",
+        subtitle: "Herbiers de Posidonie & Pêche Traditionnelle",
+        category: "Biodiversité & AMP",
+        badgeColor: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
+        icon: "fish",
+        image: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=600&q=80",
+        description: "Kerkennah est un archipel aux eaux très peu profondes. Il abrite un écosystème exceptionnel de prairies sous-marines et des méthodes de pêche uniques au monde.",
+        points: [
+          "<b>La 'Charfia' :</b> Technique de pêche fixe et passive en nappe de palmes, inscrite au patrimoine immatériel de l'UNESCO.",
+          "<b>Herbiers de Posidonie :</b> Zone clé pour la reproduction et la nurserie des poissons méditerranéens.",
+          "<b>Sfax :</b> Deuxième ville de Tunisie et 1er port de pêche industrielle du pays."
+        ],
+        quiz: "Comment s'appelle la technique de pêche traditionnelle unique de Kerkennah ?",
+        quizAnswer: "La Charfia."
+      },
+      gabes: {
+        title: "Le Golfe de Gabès",
+        subtitle: "Un Écosystème Unique à Fort Enjeu Environnemental",
+        category: "Golfes & Littoral",
+        badgeColor: "bg-amber-500/10 text-amber-400 border-amber-500/30",
+        icon: "waves",
+        image: "https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=600&q=80",
+        description: "Le Golfe de Gabès présente la particularité rare en Méditerranée d'avoir des marées importantes (jusqu'à 2 mètres d'amplitude). C'est une zone essentielle pour la faune marine mais très fragilisée.",
+        points: [
+          "<b>Phénomène de Marées :</b> Rare et spectaculaire en mer Méditerranée fermée.",
+          "<b>Oasis de bord de mer :</b> Gabès possède la seule oasis maritime d'Afrique du Nord (Chenini).",
+          "<b>Enjeux d'avenir :</b> Restauration écologique face aux rejets de phosphogypse et protection des fonds."
+        ],
+        quiz: "Quelle est la particularité marégraphique du Golfe de Gabès ?",
+        quizAnswer: "C'est l'un des rares endroits de Méditerranée avec un marnage (amplitude de marée) significatif."
+      },
+      zarzis: {
+        title: "Djerba & Zarzis (Sud-Est)",
+        subtitle: "Patrimoine Lagunaire & Économie Bleue",
+        category: "Économie Bleue & Ports",
+        badgeColor: "bg-cyan-500/10 text-cyan-400 border-cyan-500/30",
+        icon: "anchor",
+        image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80",
+        description: "L'extrême sud-est tunisien s'ouvre sur la mer d'El Bibane, une lagune d'une richesse halieutique exceptionnelle, et sur le pôle portuaire stratégique de Zarzis.",
+        points: [
+          "<b>Bahret El Bibane :</b> Plus grande lagune méditerranéenne, séparée de la mer par un cordon littoral et des passes.",
+          "<b>Port de Zarzis :</b> Activité commerciale, exportation du sel marin et pêche hauturière.",
+          "<b>Île de Djerba :</b> Patrimoine mondial UNESCO, préservation des zones humides côtières (Ramsar)."
+        ],
+        quiz: "Quel nom porte la vaste lagune naturelle à côté de Zarzis ?",
+        quizAnswer: "La Bahret El Bibane."
+      }
+    };
+
+    // Fonction de mise à jour du panneau d'information
+    function renderPanel(spotKey) {
+      const spot = dataSpots[spotKey] || dataSpots.default;
+      const contentDiv = document.getElementById('panel-content');
+
+      contentDiv.innerHTML = `
+        <div class="animate-fadeIn space-y-4">
+          <!-- Badge Catégorie -->
+          <div class="flex items-center justify-between">
+            <span class="px-2.5 py-1 rounded-full text-[11px] font-semibold border ${spot.badgeColor} flex items-center gap-1.5">
+              <i data-lucide="${spot.icon}" class="w-3.5 h-3.5"></i>
+              ${spot.category}
+            </span>
+            <span class="text-xs text-slate-400">Fiche NSI/Maritime</span>
+          </div>
+
+          <!-- Titre & Sous-titre -->
+          <div>
+            <h3 class="text-xl font-bold text-white tracking-tight">${spot.title}</h3>
+            <p class="text-xs font-medium text-cyan-400 mt-0.5">${spot.subtitle}</p>
+          </div>
+
+          <!-- Illustration / Visual -->
+          <div class="relative h-36 rounded-xl overflow-hidden border border-slate-800 shadow-inner">
+            <img src="${spot.image}" alt="${spot.title}" class="w-full h-full object-cover transition transform hover:scale-105 duration-500">
+            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent"></div>
+          </div>
+
+          <!-- Description -->
+          <p class="text-xs text-slate-300 leading-relaxed bg-slate-900/40 p-3 rounded-xl border border-slate-800/60">
+            ${spot.description}
+          </p>
+
+          <!-- Liste des points clés -->
+          <div class="space-y-2">
+            <h4 class="text-xs font-bold text-slate-200 uppercase tracking-wider flex items-center gap-1">
+              <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-cyan-400"></i> Repères Pédagogiques
+            </h4>
+            <ul class="text-xs text-slate-300 space-y-1.5 pl-1">
+              ${spot.points.map(pt => `<li class="flex items-start gap-2"><span class="text-cyan-400 font-bold">•</span><span>${pt}</span></li>`).join('')}
+            </ul>
+          </div>
+
+          <!-- Section Quiz / Question Pédagogique -->
+          <div class="bg-gradient-to-br from-slate-900 to-ocean-950 p-3.5 rounded-xl border border-cyan-500/20 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold text-amber-300 flex items-center gap-1">
+                <i data-lucide="help-circle" class="w-3.5 h-3.5"></i> Question Élève
+              </span>
+              <button onclick="toggleAnswer()" class="text-[11px] text-cyan-400 hover:text-cyan-300 underline font-medium">
+                Voir la réponse
+              </button>
+            </div>
+            <p class="text-xs text-slate-200 font-medium">${spot.quiz}</p>
+            <div id="quiz-answer" class="hidden text-xs text-emerald-300 bg-emerald-950/40 p-2 rounded border border-emerald-500/20 mt-2 transition">
+              💡 ${spot.quizAnswer}
+            </div>
+          </div>
+
+        </div>
+      `;
+
+      // Ré-initialiser les icônes Lucide
+      lucide.createIcons();
+    }
+
+    // Affichage/Masquage Réponse Quiz
+    function toggleAnswer() {
+      const ans = document.getElementById('quiz-answer');
+      if (ans) {
+        ans.classList.toggle('hidden');
+      }
+    }
+
+    // Sélection d'un hotspot
+    function selectSpot(spotKey) {
+      renderPanel(spotKey);
+
+      // Animation visuelle du point sélectionné
+      document.querySelectorAll('.hotspot-item circle:nth-child(2)').forEach(circle => {
+        circle.setAttribute('stroke-width', '1.5');
+      });
+
+      const activeGroup = document.querySelector(`.hotspot-item[data-id="${spotKey}"] circle:nth-child(2)`);
+      if (activeGroup) {
+        activeGroup.setAttribute('stroke-width', '3.5');
+      }
+    }
+
+    // Filtrage des éléments sur la carte
+    function setFilter(cat) {
+      // Boutons UI
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('bg-cyan-600', 'text-white', 'shadow');
+        btn.classList.add('text-slate-300', 'hover:bg-slate-800');
+      });
+
+      const activeBtn = document.getElementById(`btn-${cat}`);
+      if (activeBtn) {
+        activeBtn.classList.add('bg-cyan-600', 'text-white', 'shadow');
+        activeBtn.classList.remove('text-slate-300');
+      }
+
+      // Masquer / Afficher les hotspots selon la catégorie
+      const hotspots = document.querySelectorAll('.hotspot-item');
+      hotspots.forEach(spot => {
+        if (cat === 'all') {
+          spot.style.display = 'block';
+        } else {
+          if (spot.classList.contains(`cat-${cat}`)) {
+            spot.style.display = 'block';
+          } else {
+            spot.style.display = 'none';
+          }
+        }
+      });
+    }
+
+    // Réinitialisation de la vue
+    function resetView() {
+      setFilter('all');
+      renderPanel('default');
+    }
+
+    // Lancement au chargement de la page
+    window.onload = function() {
+      renderPanel('default');
+      lucide.createIcons();
+    };
+  </script>
+</body>
+</html>
